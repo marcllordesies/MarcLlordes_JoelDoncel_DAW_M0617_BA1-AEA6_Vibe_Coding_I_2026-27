@@ -18,7 +18,6 @@ return new class extends Migration {
             $table->unsignedSmallInteger('local_goals')->default(0);
             $table->unsignedSmallInteger('away_goals')->default(0);
             $table->timestamps();
-            $table->check('local_team_id <> away_team_id');
         });
     }
 
