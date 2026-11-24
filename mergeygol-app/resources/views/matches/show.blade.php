@@ -1,8 +1,22 @@
 @extends('layouts.app')
 
 @section('content')
-    <h1>{{ $match->localTeam->name }} {{ $match->local_goals }} - {{ $match->away_goals }} {{ $match->awayTeam->name }}</h1>
-    <p>Competicio: {{ $match->league->name }} | Estat: {{ $match->status }}</p>
+    @php
+        $statusLabels = [
+            'finished' => 'Finalitzat',
+            'live' => 'En joc',
+            'scheduled' => 'No iniciat',
+        ];
+        $statusLabel = $statusLabels[$match->status] ?? 'No iniciat';
+    @endphp
+    <h1>
+        {{ $match->localTeam->name }}
+        {{ $match->status === 'scheduled' ? '-' : $match->local_goals }}
+        -
+        {{ $match->status === 'scheduled' ? '-' : $match->away_goals }}
+        {{ $match->awayTeam->name }}
+    </h1>
+    <p>Competicio: {{ $match->league->name }} | Jornada {{ $match->matchday }} | Estat: {{ $statusLabel }}</p>
 
     <section style="margin-top: 16px;">
         <h2>Prediccio 1X2</h2>
@@ -28,7 +42,7 @@
         <h2>Timeline</h2>
         <ul>
             @forelse($match->events as $event)
-                <li>{{ $event->minute }}' - {{ $event->type }} - {{ $event->team->name }}{{ $event->player ? ' (' . $event->player->name . ')' : '' }}</li>
+                <li>@include('matches.event-label', ['event' => $event])</li>
             @empty
                 <li>Sense esdeveniments.</li>
             @endforelse
@@ -71,8 +85,30 @@
                         <option value="{{ $match->localTeam->id }}">{{ $match->localTeam->name }}</option>
                         <option value="{{ $match->awayTeam->id }}">{{ $match->awayTeam->name }}</option>
                     </select>
+                    <select name="player_id" required>
+                        <option value="">Jugador</option>
+                        @foreach($match->localTeam->players as $player)
+                            <option value="{{ $player->id }}" data-team="{{ $match->localTeam->id }}">{{ $player->name }} ({{ $match->localTeam->name }})</option>
+                        @endforeach
+                        @foreach($match->awayTeam->players as $player)
+                            <option value="{{ $player->id }}" data-team="{{ $match->awayTeam->id }}">{{ $player->name }} ({{ $match->awayTeam->name }})</option>
+                        @endforeach
+                    </select>
+                    <select name="related_player_id">
+                        <option value="">Sense assistència</option>
+                        @foreach($match->localTeam->players as $player)
+                            <option value="{{ $player->id }}" data-team="{{ $match->localTeam->id }}">{{ $player->name }} ({{ $match->localTeam->name }})</option>
+                        @endforeach
+                        @foreach($match->awayTeam->players as $player)
+                            <option value="{{ $player->id }}" data-team="{{ $match->awayTeam->id }}">{{ $player->name }} ({{ $match->awayTeam->name }})</option>
+                        @endforeach
+                    </select>
                     <input type="number" name="minute" min="1" max="130" placeholder="Minut" required>
-                    <input type="text" name="type" placeholder="Tipus (goal, yellow_card...)" required>
+                    <select name="type" required>
+                        <option value="goal">Gol</option>
+                        <option value="yellow_card">Targeta groga</option>
+                        <option value="red_card">Targeta vermella</option>
+                    </select>
                     <button type="submit">Registrar</button>
                 </form>
             </section>

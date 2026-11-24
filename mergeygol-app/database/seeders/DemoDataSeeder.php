@@ -4,8 +4,6 @@ namespace Database\Seeders;
 
 use App\Models\FootballMatch;
 use App\Models\League;
-use App\Models\MatchEvent;
-use App\Models\Player;
 use App\Models\Team;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
@@ -32,13 +30,9 @@ class DemoDataSeeder extends Seeder
                 ['league_id' => $league->id, 'code' => $code],
                 ['name' => $name, 'stadium' => null]
             );
-            Player::firstOrCreate(
-                ['team_id' => $teamModels[$name]->id, 'name' => 'Plantilla ' . $code],
-                ['position' => 'Davanter', 'dorsal' => 9]
-            );
         }
 
-        // Resultats oficials publicats per LALIGA fins al 22/11/2026.
+        // Official fixtures and player events are synchronized by LaLigaDataSeeder.
         $results = [
             1 => [['Alavés','Getafe',3,0],['Sevilla','Rayo',2,1],['Racing','Villarreal',2,2],['Espanyol','Levante',3,0],['Deportivo','Elche',1,1],['Atlético','Málaga',2,0],['Valencia','Betis',0,1],['Real Madrid','R. Sociedad',4,1],['Celta','Osasuna',1,2],['Barcelona','Athletic',2,0]],
             2 => [['Rayo','Alavés',1,1],['Betis','R. Sociedad',1,0],['Athletic','Sevilla',1,3],['Valencia','Celta',0,0],['Espanyol','Real Madrid',1,2],['Atlético','Villarreal',2,2],['Getafe','Racing',1,0],['Elche','Barcelona',0,5],['Osasuna','Levante',0,0],['Málaga','Deportivo',1,1]],
@@ -63,6 +57,19 @@ class DemoDataSeeder extends Seeder
 
         // La jornada 13 seguia en joc el 23/11/2026: no s'inventa el resultat.
         $this->storeMatch($league->id, $teamModels, 13, 'Levante', 'Elche', 0, 0, false);
+
+        // Jornada futurs sense resultat oficial. Es mantenen no iniciats.
+        $futureMatchdays = [
+            14 => [['Getafe','Alavés'],['Rayo','Sevilla'],['Villarreal','Racing'],['Levante','Espanyol'],['Elche','Deportivo'],['Málaga','Atlético'],['Betis','Valencia'],['R. Sociedad','Real Madrid'],['Osasuna','Celta'],['Athletic','Barcelona']],
+            15 => [['Alavés','Rayo'],['R. Sociedad','Betis'],['Sevilla','Athletic'],['Celta','Valencia'],['Real Madrid','Espanyol'],['Villarreal','Atlético'],['Racing','Getafe'],['Barcelona','Elche'],['Levante','Osasuna'],['Deportivo','Málaga']],
+            16 => [['Elche','Racing'],['Villarreal','Alavés'],['Betis','Levante'],['Espanyol','R. Sociedad'],['Atlético','Sevilla'],['Málaga','Real Madrid'],['Valencia','Deportivo'],['Athletic','Celta'],['Getafe','Osasuna'],['Rayo','Barcelona']],
+        ];
+
+        foreach ($futureMatchdays as $matchday => $matches) {
+            foreach ($matches as [$home, $away]) {
+                $this->storeMatch($league->id, $teamModels, $matchday, $home, $away, 0, 0, false);
+            }
+        }
     }
 
     private function storeMatch(int $leagueId, array $teams, int $matchday, string $home, string $away, int $homeGoals, int $awayGoals, bool $finished = true): void
@@ -72,7 +79,8 @@ class DemoDataSeeder extends Seeder
             4 => '2026-09-04', 5 => '2026-09-11', 6 => '2026-09-15',
             7 => '2026-09-18', 8 => '2026-10-09', 9 => '2026-10-16',
             10 => '2026-10-23', 11 => '2026-10-30', 12 => '2026-11-06',
-            13 => '2026-11-20',
+            13 => '2026-11-20', 14 => '2026-11-27', 15 => '2026-12-04',
+            16 => '2026-12-11',
         ];
 
         $match = FootballMatch::updateOrCreate(
@@ -91,18 +99,5 @@ class DemoDataSeeder extends Seeder
             ]
         );
 
-        if (! $finished) {
-            return;
-        }
-
-        foreach (array_merge(
-            array_fill(0, $homeGoals, [$teams[$home], 'local']),
-            array_fill(0, $awayGoals, [$teams[$away], 'away'])
-        ) as $index => [$team, $side]) {
-            MatchEvent::firstOrCreate(
-                ['match_id' => $match->id, 'team_id' => $team->id, 'type' => 'goal', 'minute' => 10 + ($index * 13)],
-                ['description' => 'Gol ' . ($side === 'local' ? 'local' : 'visitant') . ' (resultat oficial)']
-            );
-        }
     }
 }

@@ -3,10 +3,13 @@
 Aquest directori conté un MVP funcional de MergeYGol amb estructura Laravel:
 
 - Jornada i llistat de partits.
+- Gols, assistències i targetes per partit amb el nom exacte dels jugadors.
 - Detall de partit amb timeline.
 - Prediccio 1X2 amb un vot per usuari i partit.
 - Comentaris per usuaris autenticats.
 - Registre d'esdeveniments per admin.
+
+Les jornades, resultats i esdeveniments de LaLiga 2026/27 se sincronitzen des del fitxer `database/seeders/data/laliga_2026_27.json`, recopilat de les [pàgines oficials de resultats de LaLiga](https://www.laliga.com/laliga-easports/resultados/2026-27/jornada-1).
 
 ## 1. Integracio en un projecte Laravel
 

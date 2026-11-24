@@ -19,6 +19,7 @@ class MatchEvent extends Model
         'related_player_id',
         'type',
         'minute',
+        'minute_label',
         'description',
     ];
 
@@ -35,5 +36,10 @@ class MatchEvent extends Model
     public function player(): BelongsTo
     {
         return $this->belongsTo(Player::class);
+    }
+
+    public function relatedPlayer(): BelongsTo
+    {
+        return $this->belongsTo(Player::class, 'related_player_id');
     }
 }

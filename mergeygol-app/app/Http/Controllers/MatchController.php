@@ -15,6 +15,7 @@ class MatchController extends Controller
             'awayTeam.players',
             'events.team',
             'events.player',
+            'events.relatedPlayer',
             'comments.user',
             'predictions',
         ]);
